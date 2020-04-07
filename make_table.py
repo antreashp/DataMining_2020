@@ -6,7 +6,7 @@ from tqdm import tqdm
 from datetime import date as date_lib
 
 
-filename = 'dataset_mood_smartphone.csv'
+filename = '../dataset_mood_smartphone.csv'
 with open (filename,'r') as f: 
     data = f.readlines()
 
@@ -133,8 +133,8 @@ def group_datapoints_by_day_and_user (d_table):
         
         date_idx,part_of_day,season = decode_date(d)
         mylist =  []
-        if date_idx not in data_dict.keys():
-            data_dict[date_idx] = defaultdict(list)
+        if id not in data_dict.keys():
+            data_dict[id] = defaultdict(list)
         # elif var not in data_dict[id].keys()
         
         for part in part_of_day:
@@ -146,14 +146,14 @@ def group_datapoints_by_day_and_user (d_table):
         
         
         # all_records_of_id = d_table[:,np.where(d_table==id)[1]]
-        data_dict[date_idx][id].append(var_list)
+        data_dict[id][date_idx].append(var_list)
     return data_dict
 print(data_table.shape)
 d_dict_by_id = group_datapoints_by_day_and_user (data_table)
 # print(d_dict_by_id[735325])
-with open('text.txt','w') as f:
-    for i,date in enumerate(d_dict_by_id):
-        for id in d_dict_by_id[date]:
+with open('../text.txt','w') as f:
+    for id in enumerate(d_dict_by_id):
+        for i,date in d_dict_by_id[id]:
             # print(str(id)+str(d_dict_by_id[date][id])+'\n')
             f.write(str(i)+'_'+str(id)+str(d_dict_by_id[date][id])+'\n')
 # --------------------------------------------
