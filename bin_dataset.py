@@ -40,3 +40,4 @@ for line in range(len(data)):
 # plt.show()
     # exit()
 # np.zeros(user,days,26 vars)
+#######
