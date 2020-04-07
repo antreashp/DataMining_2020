@@ -1,0 +1,13 @@
+TODO_class preprosess
+
+
+_fix [userid][date]
+
+_save in better format
+
+
+_max_records()
+_min_records()
+_average_records()
+
+_delete_var()
