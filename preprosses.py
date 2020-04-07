@@ -6,6 +6,15 @@ from tqdm import tqdm
 from datetime import date as date_lib
 import ast
 import matplotlib.pyplot as plt
+import pickle
+# #--------------------------------------
+# #                PICKLE LOAD
+# with open('RAW_Data.pickle') as f:
+#     loaded_obj = pickle.load(f)
+
+# print 'loaded_obj is', loaded_obj
+# #--------------------------------------
+
 
 # >>> x = u'[ "A","B","C" , " D"]'
 var_ids =[ 'mood'  , 'circumplex.arousal','circumplex.valence' ,'activity','screen' ,'call','sms' ,'appCat.builtin' ,'appCat.communication', 'appCat.entertainment','appCat.finance' ,'appCat.game','appCat.office','appCat.other','appCat.social' ,'appCat.travel' ,'appCat.unknown' ,'appCat.utilities', 'appCat.weather','morning','noon','afternoon','night','winter','spring','summer','fall' ]

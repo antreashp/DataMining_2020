@@ -150,12 +150,18 @@ def group_datapoints_by_day_and_user (d_table):
     return data_dict
 print(data_table.shape)
 d_dict_by_id = group_datapoints_by_day_and_user (data_table)
+def save(meh):
+
+    import pickle
+    with open('RAW_Data.pickle', 'wb') as f:
+        pickle.dump(meh, f)
+save(d_dict_by_id)
 # print(d_dict_by_id[735325])
 with open('../text.txt','w') as f:
-    for id in enumerate(d_dict_by_id):
-        for i,date in d_dict_by_id[id]:
+    for id in (d_dict_by_id):
+        for i,date in enumerate(d_dict_by_id[id]):
             # print(str(id)+str(d_dict_by_id[date][id])+'\n')
-            f.write(str(i)+'_'+str(id)+str(d_dict_by_id[date][id])+'\n')
+            f.write(str(i)+'_'+str(id)+str(d_dict_by_id[id][date])+'\n')
 # --------------------------------------------
 # 1. 1 day per datapoint
 
