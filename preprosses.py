@@ -117,16 +117,33 @@ class preprocess:
 
 
 filename = 'RAW_Data.pickle'
-
+def dict_to_numpy(my_dict):
+    x = []
+    y = []
+    for id in my_dict:
+        for date in  my_dict[id]:
+            x.append(my_dict[id][date][1:])
+            y.append(my_dict[id][date][0])
+    x = np.array(x)
+    y = np.array(y)
+    return x,y
+def save_numpy(arr,filename):
+    np.save(filename, arr)
 if __name__ == '__main__':
     preprocess_instance = preprocess(filename)
     preprocess_instance.normalize()
     preprocess_instance.bin()
 
     '''Save preprocess_instance.processed_data:'''
-    print(preprocess_instance.processed_data)
-
-
+    # print(preprocess_instance.processed_data['AS14.01'][735327])
+    # print(len(preprocess_instance.processed_data.keys()))
+    # print(len(preprocess_instance.processed_data['AS14.02'].keys()))
+    # preprocess_instance.processed_data
+    x,y = dict_to_numpy(preprocess_instance.processed_data)
+    print(x.shape)
+    print(y.shape)
+    save_numpy(x,'bined_x')
+    save_numpy(y,'bined_y')
     '''
     {
         user_id: {
