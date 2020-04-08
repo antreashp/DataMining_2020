@@ -52,7 +52,8 @@ def tree_selection(X,y):
     # clf.feature_importances_  
     model = SelectFromModel(clf, prefit=True)
     return model.transform(X)
-       
+def save_numpy(arr,filename):
+    np.save(filename, arr)
 if __name__ == "__main__":
     thresh =(.01 * (1 - .01))
     # print(thresh)
@@ -60,15 +61,19 @@ if __name__ == "__main__":
     y = np.load('bined_y.npy')
     print('shapes of raw data',X.shape,y.shape)
     var_thresh_data = remove_with_var_thresh(X,thresh)
+    save_numpy(var_thresh_data,'var_thresh_data')
     print('shape after var thresh',var_thresh_data.shape)
 
     # uni_data = Univariate_feature_selection(X,y) #cannot work with negative data
     # print('shape of uni data',uni_data.shape)
 
-    L1_data = L1_based_selection(X,y)
+    L1_data = L1_based_selection(X,y)\
+    
+    save_numpy(L1_data,'L1_data')
     print('shape of L1 data',L1_data.shape)
 
     tree_data = tree_selection(X,y)
     print('shape of tree data',tree_data.shape)
-
+    
+    save_numpy(tree_data,'tree_data')
     # recursive_feature_elim(X,y) #plots stuff instead of returning
