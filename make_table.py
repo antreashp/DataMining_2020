@@ -126,7 +126,9 @@ def group_datapoints_by_day_and_user (d_table):
     # dates = list(set(list(d_table[2])))
     # ids = list(set(list(d_table[1])))
     data_dict = defaultdict(None)
-    for i , (i,id,d,var,val) in tqdm(enumerate(zip(d_table[0],d_table[1],d_table[2],d_table[3],d_table[4]))):
+    for i , item in tqdm(enumerate(d_table.transpose(1,0))):
+        # print(item.shape)
+        i,id,d,var,val = item
         # print(i,id,d,var,val)
         # exit()
         var_list = var_handler(var,val)
