@@ -62,7 +62,7 @@ if __name__ == "__main__":
     var_thresh_data = remove_with_var_thresh(X,thresh)
     print('shape after var thresh',var_thresh_data.shape)
 
-    # uni_data = Univariate_feature_selection(X,y)
+    # uni_data = Univariate_feature_selection(X,y) #cannot work with negative data
     # print('shape of uni data',uni_data.shape)
 
     L1_data = L1_based_selection(X,y)
@@ -71,4 +71,4 @@ if __name__ == "__main__":
     tree_data = tree_selection(X,y)
     print('shape of tree data',tree_data.shape)
 
-    # recursive_feature_elim(X,y)
+    # recursive_feature_elim(X,y) #plots stuff instead of returning
