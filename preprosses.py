@@ -119,9 +119,9 @@ class preprocess:
 filename = 'RAW_Data.pickle'
 
 if __name__ == '__main__':
-    preprocess_instance = preprocess(filename)
+    preprocess_instance = preprocess(filename, window_size=4, step_size=4)
     preprocess_instance.normalize()
-    preprocess_instance.bin()
+    preprocess_instance.bin(include_remainder=True)
 
     '''Save preprocess_instance.processed_data:'''
     print(preprocess_instance.processed_data)
