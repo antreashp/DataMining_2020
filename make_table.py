@@ -77,14 +77,41 @@ def decode_date(d):
         part_of_the_day = (0,0,0,1)
 
     season = None
-    if month <= 2  or  month == 12: 
-        season = (1,0,0,0)
-    elif month < 6:
-        season = (0,1,0,0)
-    elif month < 9:
-        season = (0,0,1,0)
+    # if month == 2 and day > 10:
+    #     season = (day/31.,0,0,0,0,0)
+    # if month == 3 and day < 15:
+    #     season = (0,day/31.,0,0,0,0)
+    # elif month == 3 and day > 15:
+    #     season = (0,0,day/31.,0,0,0)
+    # elif month == 4 and day < 15:
+    #     season = (0,0,day/31.,0,0,0)
+    # elif month == 4 and day > 15:
+    #     season = (0,0,0,day/31.,0,0)    
+    # elif month == 5 and day < 15:
+    #     season = (0,0,0,day/31.,0,0)
+    # elif month == 5 and day > 15:
+    #     season = (0,0,0,0,day/31.,0)
+    # elif month == 6 and day < 15:
+    #     season = (0,0,0,0,day/31.,0)
+
+    season = [0,0,0,0,0]
+    if day >15:
+            season[month-2 ]= day/31.
+            season[month-2 +1]=1 - ( day/31.)
+        
     else:
-        season = (0,0,0,1)
+        season[month-2 ]= day/31.
+        season[month-2 -1]=1 - ( day/31.)
+    
+    
+    # if month <= 2  or  month == 12: 
+    #     season = (1,0,0,0)
+    # elif month < 6:
+    #     season = (0,1,0,0)
+    # elif month < 9:
+    #     season = (0,0,1,0)
+    # else:
+    #     season = (0,0,0,1)
         
     return (date_lib(year,month,day) - date_lib(1,1,1)).days , part_of_the_day , season
 

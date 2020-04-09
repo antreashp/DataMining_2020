@@ -66,7 +66,7 @@ class preprocess:
         """
         :param record: list
         """
-        return [sum([x[i] for x in record]) / len(record) for i in range(19, 27)]
+        return [sum([x[i] for x in record]) / len(record) for i in range(19, 28)]
 
     def normalize(self):
         for user in self.data.keys():
