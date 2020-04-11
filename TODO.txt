@@ -1,3 +1,5 @@
 _use next day's mood
 _target mood -= 1
 _modify preprocess
+_add current day mood
+_calculate bench mark
