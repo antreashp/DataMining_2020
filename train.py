@@ -44,8 +44,10 @@ def train(options):
     epochs = options['epochs']
     pca_var_hold = options['pca_var_hold']
     debug_mode = options['debug_mode']
+    
     if os.path.exists(exp_name):
         shutil.rmtree(exp_name)
+
     time.sleep(1)
     writer = SummaryWriter(exp_name,flush_secs=1)
     
@@ -59,6 +61,7 @@ def train(options):
         scaler.fit(X_train)
         X_train = scaler.transform(X_train)
         X_test = scaler.transform(X_test)
+
     needed_dim = X_train.shape[1]
 
     dataset_train = MOOD(X_train, y_train, model_type=model_type,data_type='train',debug_mode=debug_mode)
@@ -98,7 +101,6 @@ def train(options):
     
     for epoch in range(epochs):
         model.train()
-        
         train_losses = []
         valid_losses = []
         for i, (images, labels) in enumerate(train_loader):
@@ -167,16 +169,16 @@ def train(options):
             print('epoch : {}, train loss : {:.4f}, valid loss : {:.4f}, acc@0.05 : {:.4f}'\
                 .format(epoch+1, np.mean(train_losses), np.mean(valid_losses), accsat[1]))
 if __name__ == '__main__':
-    options ={'exp_name'      : 'runs/Raw_reg_pca',
+    options ={'exp_name'      : 'runs/Raw_reg_pca2',
               'batch_size'    : 128,
               'epochs'        : 20,
-              'lr'            : 0.003,
+              'lr'            : 0.03,
               'use_pca'       : True,
               'pca_var_hold'  : 0.995,
-              'model_type'    : 'reg',
-              'loss_fn'       : 'mse',
-              'optim'         : 'adam',
-              'use_scheduler' : False,
-              'debug_mode'    : False
+              'model_type'    : 'reg', #'cls'
+              'loss_fn'       : 'mse', #cross-entropy
+              'optim'         : 'adam',#sgd
+              'use_scheduler' : False, #true decreaseing  
+              'debug_mode'    : False  #makes training set smaller 
     }
     train(options)
