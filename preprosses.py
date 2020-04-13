@@ -16,18 +16,19 @@ var_ids = ['mood', 'circumplex.arousal', 'circumplex.valence', 'activity', 'scre
 
 
 class preprocess:
-    def __init__(self, filename, window_size=1, step_size=1):
+    def __init__(self, filename, window_size=1):
         """
 
         :param filename: str
         :param window_size: int
         :param step_size: int
         """
+        self.step = 1 # step size always 1
         with open(filename, 'rb') as f:
             self.data = pickle.load(f)
         self.window = window_size if window_size >= 1 and type(window_size) is int else 1
-        self.step = step_size if step_size is step_size <= window_size and step_size >= 1 and type(
-            step_size) is int else 1
+        # self.step = step_size if step_size is step_size <= window_size and step_size >= 1 and type(
+        #     step_size) is int else 1
         self.processed_data = {}
 
     def average(self, record):
@@ -66,7 +67,7 @@ class preprocess:
         """
         :param record: list
         """
-        return [sum([x[i] for x in record]) / len(record) for i in range(19, 28)]
+        return [sum([x[i] for x in record]) / len(record) for i in range(19, 27)]
 
     def normalize(self):
         for user in self.data.keys():
@@ -106,12 +107,18 @@ class preprocess:
                     for i in range(self.window):
                         for j in range(len(user_data[date_keys[current_index + i]])):
                             record.append(user_data[date_keys[current_index + i]][j])
-                data_point = [self.average_mood(record)] + list(self.average_circumplex(record)) + self.average(
-                    record) + self.average_time_and_season(record)
-                if data_point[0] == -1:
+                target_mood = self.average_mood(record)
+                data_point = [None] + list(self.average_circumplex(record)) + self.average(
+                    record) + self.average_time_and_season(record) + [self.average_mood(record) / 9]
+                if target_mood == -1:
                     current_index += self.step
                     continue
+                del user_data[date_keys[current_index]]
+                date_keys.pop(current_index)
                 processed_user_data[date_keys[current_index]] = data_point
+                if current_index > 0:
+                    processed_user_data[date_keys[current_index - 1]][0] = [self.average_mood(record)]
+                print(target_mood)
                 current_index += self.step
             self.processed_data[user] = processed_user_data
 
@@ -127,10 +134,12 @@ def dict_to_numpy(my_dict):
     x = np.array(x)
     y = np.array(y)
     return x,y
+
+
 def save_numpy(arr,filename):
     np.save(filename, arr)
 if __name__ == '__main__':
-    preprocess_instance = preprocess(filename, window_size=4, step_size=4)
+    preprocess_instance = preprocess(filename, window_size=4)
     preprocess_instance.normalize()
     preprocess_instance.bin(include_remainder=True)
 

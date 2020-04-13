@@ -139,7 +139,7 @@ def var_handler(var,val):
         return data
     val = float(val)
     if idx ==0:
-        data[idx] = (val-1)/9.
+        data[idx] = val-1.
         return data
     elif idx ==1 or idx == 2 :
         data[idx] = (val+2)/4
