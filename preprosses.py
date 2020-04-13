@@ -118,7 +118,6 @@ class preprocess:
                 processed_user_data[date_keys[current_index]] = data_point
                 if current_index > 0:
                     processed_user_data[date_keys[current_index - 1]][0] = [self.average_mood(record)]
-                print(target_mood)
                 current_index += self.step
             self.processed_data[user] = processed_user_data
 
