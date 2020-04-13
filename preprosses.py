@@ -117,9 +117,22 @@ class preprocess:
                 date_keys.pop(current_index)
                 processed_user_data[date_keys[current_index]] = data_point
                 if current_index > 0:
-                    processed_user_data[date_keys[current_index - 1]][0] = [self.average_mood(record)]
+                    processed_user_data[date_keys[current_index - 1]][0] = self.average_mood(record)
                 current_index += self.step
             self.processed_data[user] = processed_user_data
+
+    def bench_mark(self):
+        predictions = []
+        for user_data in self.processed_data.values():
+            mood = 0
+            for day_data in user_data.values():
+                if day_data[0] is not None and day_data[0] <= mood + 0.5 and day_data[0] > mood - 0.5:
+                    predictions.append(True)
+                else:
+                    predictions.append(False)
+                mood = day_data[0]
+        accuracy = predictions.count(True) / len(predictions)
+        return accuracy
 
 
 filename = 'RAW_Data.pickle'
@@ -137,10 +150,13 @@ def dict_to_numpy(my_dict):
 
 def save_numpy(arr,filename):
     np.save(filename, arr)
+
+
 if __name__ == '__main__':
     preprocess_instance = preprocess(filename, window_size=4)
     preprocess_instance.normalize()
     preprocess_instance.bin(include_remainder=True)
+    print(preprocess_instance.bench_mark())
 
     '''Save preprocess_instance.processed_data:'''
     # print(preprocess_instance.processed_data['AS14.01'][735327])
