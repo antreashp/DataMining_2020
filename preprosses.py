@@ -109,15 +109,18 @@ class preprocess:
                             record.append(user_data[date_keys[current_index + i]][j])
                 target_mood = self.average_mood(record)
                 data_point = [None] + list(self.average_circumplex(record)) + self.average(
-                    record) + self.average_time_and_season(record) + [self.average_mood(record) / 9]
+                    record) + self.average_time_and_season(record) + [target_mood / 9]
                 if target_mood == -1:
+                    # print(user, date_keys[current_index], 'removed')
                     current_index += self.step
+                    del user_data[date_keys[current_index]]
+                    date_keys.pop(current_index)
                     continue
-                del user_data[date_keys[current_index]]
-                date_keys.pop(current_index)
+                
                 processed_user_data[date_keys[current_index]] = data_point
                 if current_index > 0:
-                    processed_user_data[date_keys[current_index - 1]][0] = self.average_mood(record)
+                    processed_user_data[date_keys[current_index - 1]][0] = target_mood
+                # print(target_mood)
                 current_index += self.step
             self.processed_data[user] = processed_user_data
 
@@ -153,11 +156,23 @@ def save_numpy(arr,filename):
 
 
 if __name__ == '__main__':
-    preprocess_instance = preprocess(filename, window_size=4)
+    preprocess_instance = preprocess(filename, window_size=2)
     preprocess_instance.normalize()
+    none_days = 0
+    total_days = 0
+    for user, user_data in preprocess_instance.data.items():
+        for day, day_data in preprocess_instance.data[user].items():
+            total_days += 1
+            if all(data[0] is None for data in day_data):
+                print(day)
+                none_days += 1
+            # for data in day_data:
+            #     if data[0] is None:
+            #         print(day, day_data[0])
+    print(none_days, total_days)
     preprocess_instance.bin(include_remainder=True)
     print(preprocess_instance.bench_mark())
-
+    # print(preprocess_instance.processed_data)
     '''Save preprocess_instance.processed_data:'''
     # print(preprocess_instance.processed_data['AS14.01'][735327])
     # print(len(preprocess_instance.processed_data.keys()))
