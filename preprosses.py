@@ -7,18 +7,18 @@ from datetime import date as date_lib
 import ast
 import matplotlib.pyplot as plt
 import pickle
-
+import shutil
+from torch.utils.tensorboard import SummaryWriter
 
 var_ids = ['mood', 'circumplex.arousal', 'circumplex.valence', 'activity', 'screen', 'call', 'sms', 'appCat.builtin',
            'appCat.communication', 'appCat.entertainment', 'appCat.finance', 'appCat.game', 'appCat.office',
            'appCat.other', 'appCat.social', 'appCat.travel', 'appCat.unknown', 'appCat.utilities', 'appCat.weather',
-           'morning', 'noon', 'afternoon', 'night', 'winter', 'spring', 'summer', 'fall']
+           'morning', 'noon', 'afternoon', 'night', 'winter', 'spring', 'spring2', 'spring3','summer','mood']
 
 
 class preprocess:
     def __init__(self, filename, window_size=1):
         """
-
         :param filename: str
         :param window_size: int
         :param step_size: int
@@ -156,29 +156,58 @@ def save_numpy(arr,filename):
 
 
 if __name__ == '__main__':
-    preprocess_instance = preprocess(filename, window_size=2)
+    win_size = 5
+    preprocess_instance = preprocess(filename, window_size=win_size)
     preprocess_instance.normalize()
+    # preprocess_instance.bin()
     none_days = 0
     total_days = 0
     for user, user_data in preprocess_instance.data.items():
         for day, day_data in preprocess_instance.data[user].items():
             total_days += 1
             if all(data[0] is None for data in day_data):
-                print(day)
+                # print(day)
                 none_days += 1
-            # for data in day_data:
+           # for data in day_data:
             #     if data[0] is None:
             #         print(day, day_data[0])
     print(none_days, total_days)
-    preprocess_instance.bin(include_remainder=True)
-    print(preprocess_instance.bench_mark())
+    preprocess_instance.bin(include_remainder=False)
+    exp_name = 'runs/benchmark_win'+str(win_size)
+    if os.path.exists(exp_name):
+        shutil.rmtree(exp_name)
+
+    writer = SummaryWriter(exp_name,flush_secs=1)
+    xaxis = np.ones((50)) *preprocess_instance.bench_mark()
+    for i in range(len(xaxis)):
+        writer.add_scalar('Acc/benchmarks/'+'win_'+str(win_size), xaxis[i], i)
+        
+    print('benchmark accuracy: ',preprocess_instance.bench_mark())
     # print(preprocess_instance.processed_data)
     '''Save preprocess_instance.processed_data:'''
     # print(preprocess_instance.processed_data['AS14.01'][735327])
     # print(len(preprocess_instance.processed_data.keys()))
     # print(len(preprocess_instance.processed_data['AS14.02'].keys()))
     # preprocess_instance.processed_data
-    x,y = dict_to_numpy(preprocess_instance.processed_data)
+    
+    clean_records =[]
+    for user, user_data in preprocess_instance.processed_data.items():
+        for day, day_data in preprocess_instance.processed_data[user].items():
+            # total_days += 1
+            # print(preprocess_instance.processed_data [user][day])
+                
+            if  day_data[0] is None :
+                pass
+            else:
+                # print(preprocess_instance.processed_data [user][day])
+                # exit()
+                clean_records.append(preprocess_instance.processed_data [user][day])
+    
+    clean_records = np.array(clean_records)
+    print(clean_records.shape)
+    x = clean_records[:,1:]
+    y = clean_records[:,0]
+    # x,y = dict_to_numpy(preprocess_instance.processed_data)
     print(x.shape)
     print(y.shape)
     save_numpy(x,'bined_x')

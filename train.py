@@ -169,10 +169,10 @@ def train(options):
             print('epoch : {}, train loss : {:.4f}, valid loss : {:.4f}, acc@0.05 : {:.4f}'\
                 .format(epoch+1, np.mean(train_losses), np.mean(valid_losses), accsat[1]))
 if __name__ == '__main__':
-    options ={'exp_name'      : 'runs/Raw_reg_pca2',
+    options ={'exp_name'      : 'runs/Raw_reg_pca_128_0003_win1',
               'batch_size'    : 128,
-              'epochs'        : 20,
-              'lr'            : 0.03,
+              'epochs'        : 50,
+              'lr'            : 0.0003,
               'use_pca'       : True,
               'pca_var_hold'  : 0.995,
               'model_type'    : 'reg', #'cls'
