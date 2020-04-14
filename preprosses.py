@@ -108,33 +108,33 @@ class preprocess:
                         for j in range(len(user_data[date_keys[current_index + i]])):
                             record.append(user_data[date_keys[current_index + i]][j])
                 target_mood = self.average_mood(record)
+                previous_mood = self.average_mood([record[0]])
                 data_point = [None] + list(self.average_circumplex(record)) + self.average(
                     record) + self.average_time_and_season(record) + [target_mood / 9]
-                if target_mood == -1:
+                if target_mood == -1 or previous_mood == -1:
                     # print(user, date_keys[current_index], 'removed')
                     current_index += self.step
                     del user_data[date_keys[current_index]]
                     date_keys.pop(current_index)
                     continue
-                
                 processed_user_data[date_keys[current_index]] = data_point
                 if current_index > 0:
-                    processed_user_data[date_keys[current_index - 1]][0] = target_mood
+                    processed_user_data[date_keys[current_index - 1]][0] = previous_mood
+                    print(processed_user_data[date_keys[current_index - 1]])
                 # print(target_mood)
                 current_index += self.step
             self.processed_data[user] = processed_user_data
 
     def bench_mark(self):
-        predictions = []
+        count_accurate = 0
+        count_total = 0
         for user_data in self.processed_data.values():
-            mood = 0
             for day_data in user_data.values():
-                if day_data[0] is not None and day_data[0] <= mood + 0.5 and day_data[0] > mood - 0.5:
-                    predictions.append(True)
-                else:
-                    predictions.append(False)
-                mood = day_data[0]
-        accuracy = predictions.count(True) / len(predictions)
+                if day_data[0] is not None and day_data[0] <= day_data[-1] * 9 + 0.5 and day_data[0] > day_data[-1] * 9\
+                        - 0.5:
+                    count_accurate += 1
+                count_total += 1
+        accuracy = count_accurate / count_total
         return accuracy
 
 
@@ -166,9 +166,6 @@ if __name__ == '__main__':
             if all(data[0] is None for data in day_data):
                 print(day)
                 none_days += 1
-            # for data in day_data:
-            #     if data[0] is None:
-            #         print(day, day_data[0])
     print(none_days, total_days)
     preprocess_instance.bin(include_remainder=True)
     print(preprocess_instance.bench_mark())
