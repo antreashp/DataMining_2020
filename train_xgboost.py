@@ -22,9 +22,16 @@ import xgboost as xgb
 from sklearn.metrics import mean_squared_error
 # import pandas as pd
 import numpy as np
+
 def train():
+    feature_names = [ 'arousal', 'valence', 'activity', 'screen', 'call', 'sms', 'builtin',
+           'communication', 'entertainment', 'finance', 'game', 'office',
+           'other', 'social', 'travel', 'unknown', 'utilities', 'weather',
+           'morning', 'noon', 'afternoon', 'night', 'winter', 'spring', 'spring2', 'spring3','mood']
+    print(len(feature_names))
     exp_name = 'runs/Raw_normal_realseason_pca'
     batch_size =128
+    
     use_pca = True
     if os.path.exists(exp_name):
         shutil.rmtree(exp_name)
@@ -65,7 +72,7 @@ def train():
     # xg_reg = xgb.XGBClassifier(max_depth =3, learning_rate = 0.01)
     
     xg_reg = xgb.XGBRegressor(objective ='reg:squarederror', colsample_bytree = 0.03, learning_rate = 0.03,
-                max_depth =10, alpha = 200, n_estimators = 500,verbosity=1)
+                max_depth =10, alpha = 200, n_estimators = 500,verbosity=1,feature_names=feature_names,booster ='dart',gamma = 0.01,max_delta_step =2000)
     # print(X_train[:10])
     xg_reg.fit(X_train,y_train)
 
@@ -97,8 +104,11 @@ def train():
     # xgb.plot_tree(xg_reg,num_trees=12, rankdir='LR')
     # xgb.plot_tree(xg_reg,num_trees=13, rankdir='LR')
     # plt.rcParams['figure.figsize'] = [50, 10]
-    # plt.figure(2)
-    xgb.plot_importance(xg_reg)
+    # plt.figure(1)
+    xgb.plot_importance(xg_reg,show_values=True)
+    # xgb.plot_importance(xg_reg.get_booster())
+    
     plt.rcParams['figure.figsize'] = [5, 5]
+    
     plt.show()
 train()
