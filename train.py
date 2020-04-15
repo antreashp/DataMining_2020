@@ -173,7 +173,7 @@ def train(options):
                 .format(epoch+1, np.mean(train_losses), np.mean(valid_losses), accs[1]))
 if __name__ == '__main__':
     options ={'exp_name'      : None, #default if dont want to specify 
-              'win_size'      : 2,
+              'win_size'      : 5,
               'batch_size'    : 128,
               'epochs'        : 50,
               'lr'            : 0.0003,
