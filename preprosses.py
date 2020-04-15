@@ -17,39 +17,48 @@ var_ids = ['mood', 'circumplex.arousal', 'circumplex.valence', 'activity', 'scre
 
 
 class preprocess:
-    def __init__(self, filename, window_size=1):
+    def __init__(self, filename, window_size=1, methods=None):
         """
         :param filename: str
         :param window_size: int
         :param step_size: int
         """
         self.step = 1 # step size always 1
+        self.methods = methods
         with open(filename, 'rb') as f:
             self.data = pickle.load(f)
         self.window = window_size if window_size >= 1 and type(window_size) is int else 1
         # self.step = step_size if step_size is step_size <= window_size and step_size >= 1 and type(
         #     step_size) is int else 1
         self.processed_data = {}
+
     def average(self, record):
         """
         :param record: list
         """
-        return [sum([x[i] for x in record if x[i] is not None]) / len([x for x in record if x[i] is not None])
-                for i in range(3, 19)]
+        methods = ['average'] * len(record[0]) if self.methods is None else self.methods
+
+        return [(sum([x[i] for x in record if x[i] is not None]) / len([x for x in record if x[i] is not None])) if
+                methods[i] == 'average' else max([x[i] for x in record if x[i] is not None]) if methods[i] == 'max' else
+                min([x[i] for x in record if x[i] is not None]) for i in range(3, 19)]
 
     def average_mood(self, record):
         """
         :param record: list
         """
+        method = self.methods[0] is self.methods is not None
         moods = []
         for data_point in record:
             if data_point[0] is not None:
                 moods.append(data_point[0])
-        return sum(moods) / len(moods) if len(moods) else -1
+        return -1 if not len(moods) else sum(moods) / len(moods) if method == 'average' else max(moods) if method == \
+                                                                                             'max' else min(moods)
+
     def average_circumplex(self, record):
         """
         :param record: list
         """
+        method = self.methods[0] is self.methods is not None
         arousal = []
         valence = []
         for data_point in record:
@@ -58,8 +67,10 @@ class preprocess:
         for data_point in record:
             if data_point[2] is not None:
                 valence.append(data_point[2])
-        return sum(arousal) / len(arousal) if len(arousal) else 0.5, sum(valence) / len(valence) if len(valence) else\
-            0.5
+        return 0.5 if not len(arousal) else sum(arousal) / len(arousal) if method == 'average' else max(arousal) if \
+            method == 'max' else min(arousal), \
+               0.5 if not len(valence) else sum(valence) / len(valence) if method == 'average' else max(valence) if \
+                   method == 'max' else min(valence)
 
 
     def average_time_and_season(self, record):
@@ -156,9 +167,9 @@ def save_numpy(arr,filename):
 if __name__ == '__main__':
     
     for win_size in range(1,6):
-        preprocess_instance = preprocess(filename, window_size=win_size)
+        '''change methods here'''
+        preprocess_instance = preprocess(filename, window_size=win_size, methods=['max'] * 27)
         preprocess_instance.normalize()
-        # preprocess_instance.bin()
         none_days = 0
         total_days = 0
         for user, user_data in preprocess_instance.data.items():
