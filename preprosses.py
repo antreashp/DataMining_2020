@@ -72,7 +72,6 @@ class preprocess:
                0.5 if not len(valence) else sum(valence) / len(valence) if method == 'average' else max(valence) if \
                    method == 'max' else min(valence)
 
-
     def average_time_and_season(self, record):
         """
         :param record: list
@@ -146,6 +145,45 @@ class preprocess:
         accuracy = count_accurate / count_total
         return accuracy
 
+    def transform_target(self):
+        counts = [0 for i in range(9)]
+        for user, user_data in self.processed_data.items():
+            for data_point in user_data.values():
+                mood = data_point[0]
+                if mood is None:
+                    continue
+                if mood == 9:
+                    counts[8] += 1
+                else:
+                    counts[round(mood)] += 1
+        total_count = sum(counts)
+        K = [9 * counts[i] / total_count for i in range(9)]
+        offsets = [sum([K[j] for j in range(i)]) for i in range(9)]
+        self.offsets = offsets.copy()
+        self.K = K.copy()
+        for user, user_data in self.processed_data.items():
+            for day, data_point in user_data.items():
+                mood = data_point[0]
+                if mood is None:
+                    continue
+                transformed_mood = offsets[round(mood) if mood < 9 else 8] + K[round(mood) if mood < 9 else 8] * (
+                    mood - round(mood))
+                self.processed_data[user][day][0] = transformed_mood
+
+    def decode_target(self, value):
+        if value == 9:
+            return 9
+        if value == 0:
+            return 0
+        k = 0
+        for offset in self.offsets:
+            if value < offset:
+                break
+            k += 1
+        k -= 1
+        original_value = k + (value - self.offsets[k]) / self.K[k]
+        return original_value
+
 
 filename = 'RAW_Data.pickle'
 def dict_to_numpy(my_dict):
@@ -181,6 +219,8 @@ if __name__ == '__main__':
                     
         print(none_days, total_days)
         preprocess_instance.bin(include_remainder=False)
+        preprocess_instance.transform_target()
+        print(preprocess_instance.decode_target(0.56))
         exp_name = 'runs/benchmark_win'+str(win_size)
         if os.path.exists(exp_name):
             shutil.rmtree(exp_name)
@@ -189,9 +229,8 @@ if __name__ == '__main__':
         xaxis = np.ones((50)) *preprocess_instance.bench_mark()
         for i in range(len(xaxis)):
             writer.add_scalar('Acc/benchmarks/'+'win_'+str(win_size), xaxis[i], i)
-            
+
         print('benchmark accuracy: ',preprocess_instance.bench_mark())
-        # print(preprocess_instance.processed_data)
         '''Save preprocess_instance.processed_data:'''
         # print(preprocess_instance.processed_data['AS14.01'][735327])
         # print(len(preprocess_instance.processed_data.keys()))
