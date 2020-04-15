@@ -30,7 +30,6 @@ class preprocess:
         # self.step = step_size if step_size is step_size <= window_size and step_size >= 1 and type(
         #     step_size) is int else 1
         self.processed_data = {}
-
     def average(self, record):
         """
         :param record: list
@@ -47,7 +46,6 @@ class preprocess:
             if data_point[0] is not None:
                 moods.append(data_point[0])
         return sum(moods) / len(moods) if len(moods) else -1
-
     def average_circumplex(self, record):
         """
         :param record: list
@@ -62,6 +60,7 @@ class preprocess:
                 valence.append(data_point[2])
         return sum(arousal) / len(arousal) if len(arousal) else 0.5, sum(valence) / len(valence) if len(valence) else\
             0.5
+
 
     def average_time_and_season(self, record):
         """
@@ -89,7 +88,6 @@ class preprocess:
                     for j in range(3, 19):
                         record[j] = record[j] / max_values[j] if max_values[j] != 0 else 0
                     self.data[user][date][i] = record
-
     def bin(self, include_remainder=False):
         for user in self.data.keys():
             user_data = self.data[user]
@@ -108,33 +106,33 @@ class preprocess:
                         for j in range(len(user_data[date_keys[current_index + i]])):
                             record.append(user_data[date_keys[current_index + i]][j])
                 target_mood = self.average_mood(record)
+                previous_mood = self.average_mood([record[0]])
                 data_point = [None] + list(self.average_circumplex(record)) + self.average(
                     record) + self.average_time_and_season(record) + [target_mood / 9]
-                if target_mood == -1:
+                if target_mood == -1 or previous_mood == -1:
                     # print(user, date_keys[current_index], 'removed')
                     current_index += self.step
                     del user_data[date_keys[current_index]]
                     date_keys.pop(current_index)
                     continue
-                
                 processed_user_data[date_keys[current_index]] = data_point
                 if current_index > 0:
-                    processed_user_data[date_keys[current_index - 1]][0] = target_mood
+                    processed_user_data[date_keys[current_index - 1]][0] = previous_mood
+                    # print(processed_user_data[date_keys[current_index - 1]])
                 # print(target_mood)
                 current_index += self.step
             self.processed_data[user] = processed_user_data
 
     def bench_mark(self):
-        predictions = []
+        count_accurate = 0
+        count_total = 0
         for user_data in self.processed_data.values():
-            mood = 0
             for day_data in user_data.values():
-                if day_data[0] is not None and day_data[0] <= mood + 0.5 and day_data[0] > mood - 0.5:
-                    predictions.append(True)
-                else:
-                    predictions.append(False)
-                mood = day_data[0]
-        accuracy = predictions.count(True) / len(predictions)
+                if day_data[0] is not None and day_data[0] <= day_data[-1] * 9 + 0.5 and day_data[0] > day_data[-1] * 9\
+                        - 0.5:
+                    count_accurate += 1
+                count_total += 1
+        accuracy = count_accurate / count_total
         return accuracy
 
 
@@ -156,68 +154,67 @@ def save_numpy(arr,filename):
 
 
 if __name__ == '__main__':
-    win_size = 5
-    preprocess_instance = preprocess(filename, window_size=win_size)
-    preprocess_instance.normalize()
-    # preprocess_instance.bin()
-    none_days = 0
-    total_days = 0
-    for user, user_data in preprocess_instance.data.items():
-        for day, day_data in preprocess_instance.data[user].items():
-            total_days += 1
-            if all(data[0] is None for data in day_data):
-                # print(day)
-                none_days += 1
-           # for data in day_data:
-            #     if data[0] is None:
-            #         print(day, day_data[0])
-    print(none_days, total_days)
-    preprocess_instance.bin(include_remainder=False)
-    exp_name = 'runs/benchmark_win'+str(win_size)
-    if os.path.exists(exp_name):
-        shutil.rmtree(exp_name)
+    
+    for win_size in range(1,6):
+        preprocess_instance = preprocess(filename, window_size=win_size)
+        preprocess_instance.normalize()
+        # preprocess_instance.bin()
+        none_days = 0
+        total_days = 0
+        for user, user_data in preprocess_instance.data.items():
+            for day, day_data in preprocess_instance.data[user].items():
+                total_days += 1
+                if all(data[0] is None for data in day_data):
+                    # print(day)
+                    none_days += 1
+                    
+        print(none_days, total_days)
+        preprocess_instance.bin(include_remainder=False)
+        exp_name = 'runs/benchmark_win'+str(win_size)
+        if os.path.exists(exp_name):
+            shutil.rmtree(exp_name)
 
-    writer = SummaryWriter(exp_name,flush_secs=1)
-    xaxis = np.ones((50)) *preprocess_instance.bench_mark()
-    for i in range(len(xaxis)):
-        writer.add_scalar('Acc/benchmarks/'+'win_'+str(win_size), xaxis[i], i)
+        writer = SummaryWriter(exp_name,flush_secs=1)
+        xaxis = np.ones((50)) *preprocess_instance.bench_mark()
+        for i in range(len(xaxis)):
+            writer.add_scalar('Acc/benchmarks/'+'win_'+str(win_size), xaxis[i], i)
+            
+        print('benchmark accuracy: ',preprocess_instance.bench_mark())
+        # print(preprocess_instance.processed_data)
+        '''Save preprocess_instance.processed_data:'''
+        # print(preprocess_instance.processed_data['AS14.01'][735327])
+        # print(len(preprocess_instance.processed_data.keys()))
+        # print(len(preprocess_instance.processed_data['AS14.02'].keys()))
+        # preprocess_instance.processed_data
         
-    print('benchmark accuracy: ',preprocess_instance.bench_mark())
-    # print(preprocess_instance.processed_data)
-    '''Save preprocess_instance.processed_data:'''
-    # print(preprocess_instance.processed_data['AS14.01'][735327])
-    # print(len(preprocess_instance.processed_data.keys()))
-    # print(len(preprocess_instance.processed_data['AS14.02'].keys()))
-    # preprocess_instance.processed_data
-    
-    clean_records =[]
-    for user, user_data in preprocess_instance.processed_data.items():
-        for day, day_data in preprocess_instance.processed_data[user].items():
-            # total_days += 1
-            # print(preprocess_instance.processed_data [user][day])
-                
-            if  day_data[0] is None :
-                pass
-            else:
+        clean_records =[]
+        for user, user_data in preprocess_instance.processed_data.items():
+            for day, day_data in preprocess_instance.processed_data[user].items():
+                # total_days += 1
                 # print(preprocess_instance.processed_data [user][day])
-                # exit()
-                clean_records.append(preprocess_instance.processed_data [user][day])
-    
-    clean_records = np.array(clean_records)
-    print(clean_records.shape)
-    x = clean_records[:,1:]
-    y = clean_records[:,0]
-    # x,y = dict_to_numpy(preprocess_instance.processed_data)
-    print(x.shape)
-    print(y.shape)
-    save_numpy(x,'bined_x')
-    save_numpy(y,'bined_y')
-    '''
-    {
-        user_id: {
-            date: {
-                [variables]
+                    
+                if  day_data[0] is None :
+                    pass
+                else:
+                    # print(preprocess_instance.processed_data [user][day])
+                    # exit()
+                    clean_records.append(preprocess_instance.processed_data [user][day])
+        
+        clean_records = np.array(clean_records)
+        print(clean_records.shape)
+        x = clean_records[:,1:]
+        y = clean_records[:,0]
+        # x,y = dict_to_numpy(preprocess_instance.processed_data)
+        print(x.shape)
+        print(y.shape)
+        save_numpy(x,'bined_x_win'+str(win_size))
+        save_numpy(y,'bined_y_win'+str(win_size))
+        '''
+        {
+            user_id: {
+                date: {
+                    [variables]
+                }, ...
             }, ...
-        }, ...
-    }
-    '''
+        }
+        '''

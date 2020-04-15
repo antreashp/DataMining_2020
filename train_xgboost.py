@@ -39,19 +39,12 @@ def train():
 
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    if 'L1' in exp_name:
-        data_path = 'L1_data.npy' 
-    elif 'var' in exp_name:
-        data_path = 'var_thresh_data.npy' 
-    elif 'Raw' in exp_name:
-        data_path = 'bined_x.npy' 
-    elif 'tree' in exp_name:
-        data_path = 'tree_data.npy' 
+
         
     
-    X = np.load(data_path)
+    X = np.load('bined_x_win2.npy')
 
-    y = np.load('bined_y.npy')
+    y = np.load('bined_y_win2.npy')
     print(np.max(y))
     print(np.min(y))
     print(X.shape)
@@ -69,19 +62,23 @@ def train():
     # exit()
     # data_dmatrix = xgb.DMatrix(data=X_train,label=X_test)
     
-    xg_reg = xgb.XGBClassifier(max_depth =3, learning_rate = 0.01)
+    # xg_reg = xgb.XGBClassifier(max_depth =3, learning_rate = 0.01)
     
-    # xg_reg = xgb.XGBRegressor(objective ='reg:squarederror', colsample_bytree = 0.3, learning_rate = 0.1,
-                # max_depth = 5, alpha = 10, n_estimators = 5,verbosity=1,gamma=  1)
+    xg_reg = xgb.XGBRegressor(objective ='reg:squarederror', colsample_bytree = 0.03, learning_rate = 0.03,
+                max_depth =10, alpha = 200, n_estimators = 500,verbosity=1)
     # print(X_train[:10])
     xg_reg.fit(X_train,y_train)
 
     preds = xg_reg.predict(X_test)
+    print(preds.shape,y_test.shape)
     print(preds[-10:],y_test[-10:])
-    diff = preds- y_test 
-    accuracy = (len(preds)-np.count_nonzero(diff) )/len(preds)
+    diff = abs(preds- y_test )
+    # print(diff)
+    accuracy = (len(diff[diff<0.5]) )/preds.shape[0]
+    # accuracy01 = (len(diff[diff>0.5]) )/len(preds)
+    # accuracy = (len(diff[diff>0.5]) )/len(preds)
     # accuracy = (np.abs(preds - y_test) < 0.0001 ).all().mean()
-    print(accuracy)
+    print('accuracy,',accuracy)
     # rmse = np.sqrt(mean_squared_error(y_test, preds))
     # print("RMSE: %f" % (rmse))
     # plt.figure(1)

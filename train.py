@@ -44,7 +44,10 @@ def train(options):
     epochs = options['epochs']
     pca_var_hold = options['pca_var_hold']
     debug_mode = options['debug_mode']
-    
+    win_size = options['win_size']
+    if exp_name is None:
+
+        exp_name = 'runs/Raw_' +str(model_type)+'_pca_'+str(use_pca)+'_'+str(batch_size)+'_'+str(lr)+'_win'+str(win_size)
     if os.path.exists(exp_name):
         shutil.rmtree(exp_name)
 
@@ -167,13 +170,14 @@ def train(options):
         # valid_acc_list.append(accuracy)
         if epoch ==epochs-1:
             print('epoch : {}, train loss : {:.4f}, valid loss : {:.4f}, acc@0.05 : {:.4f}'\
-                .format(epoch+1, np.mean(train_losses), np.mean(valid_losses), accsat[1]))
+                .format(epoch+1, np.mean(train_losses), np.mean(valid_losses), accs[1]))
 if __name__ == '__main__':
-    options ={'exp_name'      : 'runs/Raw_reg_pca_128_0003_win1',
+    options ={'exp_name'      : None, #default if dont want to specify 
+              'win_size'      : 2,
               'batch_size'    : 128,
               'epochs'        : 50,
               'lr'            : 0.0003,
-              'use_pca'       : True,
+              'use_pca'       : False,
               'pca_var_hold'  : 0.995,
               'model_type'    : 'reg', #'cls'
               'loss_fn'       : 'mse', #cross-entropy

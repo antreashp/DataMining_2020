@@ -14,18 +14,20 @@ if __name__ == "__main__":
     # and classifier regularization.
     pca = PCA()
     # set the tolerance to a large value to make the example faster
-    logistic = LogisticRegression(max_iter=10000, tol=0.1)
+    logistic = LogisticRegression(max_iter=10000, tol=0.01)
     pipe = Pipeline(steps=[('pca', pca), ('logistic', logistic)])
 
     # X_digits, y_digits = datasets.load_digits(return_X_y=True)
-    X_digits = np.load('bined_x.npy')
-    y_digits = np.load('bined_y.npy')
-    
-    y_digits = np.round(y_digits*10)
+    X_digits = np.load('bined_x_win1.npy')
+    y_digits = np.load('bined_y_win1.npy')
+    print(y_digits.shape)
+    print(np.max(X_digits))
+    print(X_digits[0])
+    y_digits = np.round(y_digits)
     # Parameters of pipelines can be set using ‘__’ separated parameter names:
     param_grid = {
-        'pca__n_components': [5, 10, 15, 20, 25],
-        'logistic__C': np.logspace(-4, 4, 4),
+        'pca__n_components': range(1,26),
+        'logistic__C': np.logspace(-8, 8, 32),
     }
     search = GridSearchCV(pipe, param_grid, n_jobs=-1)
     search.fit(X_digits, y_digits)

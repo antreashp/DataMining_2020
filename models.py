@@ -3,7 +3,26 @@ import torch.nn.functional as F
 import numpy as np # linear algebra
 import torch
 
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+        self.conv1 = nn.Conv2d(1, 20, kernel_size=5)
+        self.conv2 = nn.Conv2d(20, 20, kernel_size=5)
+        self.conv2_drop = nn.Dropout2d()
+        self.fc1 = nn.Linear(3380, 512)
+        self.fc2 = nn.Linear(512, 1)
 
+    def forward(self, x):
+        bs = x.shape[0]
+        x = F.relu(F.max_pool2d(self.conv1(x), 2))
+        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
+        # print(x.shape)
+        x = x.view(bs, -1)
+        x = F.relu(self.fc1(x))
+        x = F.dropout(x, training=self.training)
+        x = self.fc2(x)
+        
+        return x
 class MLP(nn.Module):
     def __init__(self,needed_dim=None,model_type='reg',n_classes=None):
         super(MLP, self).__init__()
@@ -11,14 +30,16 @@ class MLP(nn.Module):
             print('needing information about the input dim')
             exit()
         if model_type == 'reg':
-            last_layer = nn.Linear(1000, 1)
+            last_layer = nn.Linear(512, 1)
         elif model_type =='cls':
-            last_layer = nn.Linear(1000, n_classes)
+            last_layer = nn.Linear(512, n_classes)
             
         self.layers = nn.Sequential(
-            nn.Linear(needed_dim, 1000),
+            nn.Linear(needed_dim, 2048),
             nn.ReLU(),
-            nn.Linear(1000, 1000),
+            nn.Linear(2048, 1000),
+            nn.ReLU(),    
+            nn.Linear(1000, 512),
             nn.ReLU(),
             last_layer
         )
