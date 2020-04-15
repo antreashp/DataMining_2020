@@ -49,9 +49,9 @@ def train():
 
         
     
-    X = np.load('bined_x_win2.npy')
+    X = np.load('bined_x_win5.npy')
 
-    y = np.load('bined_y_win2.npy')
+    y = np.load('bined_y_win5.npy')
     print(np.max(y))
     print(np.min(y))
     print(X.shape)
@@ -71,8 +71,8 @@ def train():
     
     # xg_reg = xgb.XGBClassifier(max_depth =3, learning_rate = 0.01)
     
-    xg_reg = xgb.XGBRegressor(objective ='reg:squarederror', colsample_bytree = 0.03, learning_rate = 0.03,
-                max_depth =10, alpha = 200, n_estimators = 500,verbosity=1,feature_names=feature_names,booster ='dart',gamma = 0.01,max_delta_step =2000)
+    xg_reg = xgb.XGBRegressor(objective ='reg:squarederror', colsample_bytree = 0.1, learning_rate = 0.001,
+                max_depth =15, alpha = 100, n_estimators = 10000,verbosity=1,feature_names=feature_names,gamma = 0.01,max_delta_step =2000)
     # print(X_train[:10])
     xg_reg.fit(X_train,y_train)
 
@@ -89,11 +89,11 @@ def train():
     # rmse = np.sqrt(mean_squared_error(y_test, preds))
     # print("RMSE: %f" % (rmse))
     # plt.figure(1)
-    # xgb.plot_tree(xg_reg,num_trees=0, rankdir='LR')
-    # xgb.plot_tree(xg_reg,num_trees=1, rankdir='LR')
-    # xgb.plot_tree(xg_reg,num_trees=2, rankdir='LR')
-    # xgb.plot_tree(xg_reg,num_trees=3, rankdir='LR')
-    # xgb.plot_tree(xg_reg,num_trees=4, rankdir='LR')
+    xgb.plot_tree(xg_reg,num_trees=0, rankdir='LR')
+    xgb.plot_tree(xg_reg,num_trees=1, rankdir='LR')
+    xgb.plot_tree(xg_reg,num_trees=2, rankdir='LR')
+    xgb.plot_tree(xg_reg,num_trees=3, rankdir='LR')
+    xgb.plot_tree(xg_reg,num_trees=4, rankdir='LR')
     # xgb.plot_tree(xg_reg,num_trees=5, rankdir='LR')
     # xgb.plot_tree(xg_reg,num_trees=6, rankdir='LR')
     # xgb.plot_tree(xg_reg,num_trees=7, rankdir='LR')

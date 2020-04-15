@@ -18,20 +18,20 @@ if __name__ == "__main__":
     pipe = Pipeline(steps=[('pca', pca), ('logistic', logistic)])
 
     # X_digits, y_digits = datasets.load_digits(return_X_y=True)
-    X_digits = np.load('bined_x_win1.npy')
-    y_digits = np.load('bined_y_win1.npy')
-    # print(y_digits[0])
+    X_digits = np.load('bined_x_win3.npy')
+    y_digits = np.load('bined_y_win3.npy')
+    print(np.round(X_digits[0],2))
     y_onehot = np.zeros((len(y_digits),10))
     for i in range(len(y_digits)):
         y_onehot[i][int(y_digits[i])] = 1
-    print(y_onehot.shape)
-    print(np.max(X_digits))
-    print(X_digits[0])
+    # print(y_onehot.shape)
+    # print(np.max(X_digits))
+    # print(X_digits[0])
     y_digits = np.round(y_digits)
     # Parameters of pipelines can be set using ‘__’ separated parameter names:
     param_grid = {
         'pca__n_components': range(1,26),
-        'logistic__C': np.logspace(0, 10, 10),
+        'logistic__C': np.logspace(-4, 4, 10),
     }
     search = GridSearchCV(pipe, param_grid, n_jobs=-1)
     search.fit(X_digits, y_digits)
