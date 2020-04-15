@@ -5,4 +5,18 @@ _add current day mood
 _calculate bench mark
 
 
+report : 
+make_table stuff
+plots
+preprocess 
+    _ windowing
+    _transforming
+pca
+xgboost
+Multi layer perceptron
+maybe hilbert curve
+results
+plots
+skynet
+
 
