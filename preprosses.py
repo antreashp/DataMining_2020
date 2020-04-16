@@ -36,10 +36,11 @@ class preprocess:
             'valence': [1, 1],
             'arousal': [2, 2],
             'circumplex': [3, 18],
-            'time': [9, 22],
+            'time': [19, 22],
             'season': [23, 27],
             'mood': [28, 28]
         }
+        # inclusive
 
     def set_index(self, indexes):
         """
@@ -120,7 +121,7 @@ class preprocess:
                     for j in range(self.indexes['time'][0], self.indexes['season'][1]):
                         record[j] = record[j] / max_values[j] if max_values[j] != 0 else 0
                     self.data[user][date][i] = record
-    
+
     def bin(self, include_remainder=False):
         for user in self.data.keys():
             user_data = self.data[user]
