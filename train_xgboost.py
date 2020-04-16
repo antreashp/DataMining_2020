@@ -21,6 +21,7 @@ from sklearn.decomposition import PCA
 import xgboost as xgb
 from sklearn.metrics import mean_squared_error
 # import pandas as pd
+from preprosses import preprocess
 import numpy as np
 
 def train():
@@ -30,7 +31,19 @@ def train():
            'morning', 'noon', 'afternoon', 'night', 'winter', 'spring', 'spring2', 'spring3','mood']
     print(len(feature_names))
     exp_name = 'runs/Raw_normal_realseason_pca'
+    methods = ['average','max','max','max','max','max','max','max','max','max',
+        'max','max','max','max','max','max','max','max','average','average',
+        'average','average','average','average','average','average','average','average']
+        
+    win_size = 3
     batch_size =128
+    
+    filename = 'RAW_Data.pickle'
+    preprocess_instance = preprocess(filename, window_size=win_size, methods=methods)
+    preprocess_instance.normalize()
+    
+    preprocess_instance.bin(include_remainder=False)
+    preprocess_instance.transform_target()
     
     use_pca = True
     if os.path.exists(exp_name):
@@ -39,7 +52,7 @@ def train():
     time.sleep(1)
     # writer = SummaryWriter(exp_name,flush_secs=1)
 
-
+    
    
 
 
@@ -49,9 +62,9 @@ def train():
 
         
     
-    X = np.load('bined_x_win5.npy')
+    X = np.load('bined_x_win'+str(win_size)+'.npy')
 
-    y = np.load('bined_y_win5.npy')
+    y = np.load('bined_y_win'+str(win_size)+'.npy')
     print(np.max(y))
     print(np.min(y))
     print(X.shape)
@@ -71,7 +84,7 @@ def train():
     
     # xg_reg = xgb.XGBClassifier(max_depth =3, learning_rate = 0.01)
     
-    xg_reg = xgb.XGBRegressor(objective ='reg:squarederror', colsample_bytree = 0.1, learning_rate = 0.001,
+    xg_reg = xgb.XGBRegressor(objective ='reg:squarederror', colsample_bytree = 0.1, learning_rate = 0.01,
                 max_depth =15, alpha = 100, n_estimators = 10000,verbosity=1,feature_names=feature_names,gamma = 0.01,max_delta_step =2000)
     # print(X_train[:10])
     xg_reg.fit(X_train,y_train)
@@ -79,8 +92,14 @@ def train():
     preds = xg_reg.predict(X_test)
     print(preds.shape,y_test.shape)
     print(preds[-10:],y_test[-10:])
+    preds = preprocess_instance.decode_targets(preds)
+    y_test = preprocess_instance.decode_targets(y_test)
+    
+    print(preds.shape,y_test.shape)
+    print(preds[-10:],y_test[-10:])
     diff = abs(preds- y_test )
     # print(diff)
+
     accuracy = (len(diff[diff<0.5]) )/preds.shape[0]
     # accuracy01 = (len(diff[diff>0.5]) )/len(preds)
     # accuracy = (len(diff[diff>0.5]) )/len(preds)
@@ -89,11 +108,11 @@ def train():
     # rmse = np.sqrt(mean_squared_error(y_test, preds))
     # print("RMSE: %f" % (rmse))
     # plt.figure(1)
-    xgb.plot_tree(xg_reg,num_trees=0, rankdir='LR')
-    xgb.plot_tree(xg_reg,num_trees=1, rankdir='LR')
-    xgb.plot_tree(xg_reg,num_trees=2, rankdir='LR')
-    xgb.plot_tree(xg_reg,num_trees=3, rankdir='LR')
-    xgb.plot_tree(xg_reg,num_trees=4, rankdir='LR')
+    # xgb.plot_tree(xg_reg,num_trees=0, rankdir='LR')
+    # xgb.plot_tree(xg_reg,num_trees=1, rankdir='LR')
+    # xgb.plot_tree(xg_reg,num_trees=2, rankdir='LR')
+    # xgb.plot_tree(xg_reg,num_trees=3, rankdir='LR')
+    # xgb.plot_tree(xg_reg,num_trees=4, rankdir='LR')
     # xgb.plot_tree(xg_reg,num_trees=5, rankdir='LR')
     # xgb.plot_tree(xg_reg,num_trees=6, rankdir='LR')
     # xgb.plot_tree(xg_reg,num_trees=7, rankdir='LR')

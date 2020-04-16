@@ -15,7 +15,6 @@ var_ids = ['mood', 'circumplex.arousal', 'circumplex.valence', 'activity', 'scre
            'appCat.other', 'appCat.social', 'appCat.travel', 'appCat.unknown', 'appCat.utilities', 'appCat.weather',
            'morning', 'noon', 'afternoon', 'night', 'winter', 'spring', 'spring2', 'spring3','summer','mood']
 
-
 class preprocess:
     def __init__(self, filename, window_size=1, methods=None):
         """
@@ -23,11 +22,15 @@ class preprocess:
         :param window_size: int
         :param step_size: int
         """
+
         self.step = 1 # step size always 1
         self.methods = methods
         with open(filename, 'rb') as f:
             self.data = pickle.load(f)
         self.window = window_size if window_size >= 1 and type(window_size) is int else 1
+                
+        self.writer = SummaryWriter('runs/benchmark_win'+str(self.window),flush_secs=1)
+
         # self.step = step_size if step_size is step_size <= window_size and step_size >= 1 and type(
         #     step_size) is int else 1
         self.processed_data = {}
@@ -42,7 +45,7 @@ class preprocess:
             'mood': [28, 28]
         }
         # inclusive
-
+        
     def set_index(self, indexes):
         """
         Input a dictionary, with variable name as keys, indexes (list of 2)
@@ -160,7 +163,7 @@ class preprocess:
     def bench_mark(self):
         count_accurate = 0
         count_total = 0
-        for user_data in self.processed_data.values():
+        for i,user_data in enumerate(self.processed_data.values()):
             for day_data in user_data.values():
                 if self.encoded:
                     mood = self.decode_target(day_data[0])
@@ -175,6 +178,10 @@ class preprocess:
                         # - 0.5:
                     count_accurate += 1
                 count_total += 1
+            temp_acc = count_accurate / count_total
+
+            self.writer.add_scalar('Acc/val_@'+str(0.05),float(temp_acc*100), i)
+
         accuracy = count_accurate / count_total
         return accuracy
 
@@ -279,13 +286,10 @@ if __name__ == '__main__':
         preprocess_instance.transform_target()
         print(preprocess_instance.decode_target(0.56))
         exp_name = 'runs/benchmark_win'+str(win_size)
-        if os.path.exists(exp_name):
-            shutil.rmtree(exp_name)
+        # if os.path.exists(exp_name):
+        #     shutil.rmtree(exp_name)
 
-        writer = SummaryWriter(exp_name,flush_secs=1)
-        xaxis = np.ones((50)) *preprocess_instance.bench_mark()
-        for i in range(len(xaxis)):
-            writer.add_scalar('Acc/benchmarks/'+'win_'+str(win_size), xaxis[i], i)
+        # xaxis = np.ones((50)) *preprocess_instance.bench_mark()
 
         print('benchmark accuracy: ',preprocess_instance.bench_mark())
         '''Save preprocess_instance.processed_data:'''

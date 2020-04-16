@@ -18,12 +18,15 @@ import shutil
 import time
 import numpy as np
 from sklearn.decomposition import PCA
-
+from preprosses import preprocess
 from mood_dataset import MOOD
 from models import MLP
-def accat(out,trg,thresh=0.05 ):
+def accat(out,trg,thresh=0.5,preprocess_instance=None ):
         out = out.detach().cpu().numpy().squeeze()
         trg = trg.detach().cpu().numpy().squeeze()
+        
+        out = preprocess_instance.decode_targets(out*9)
+        trg = preprocess_instance.decode_targets(trg*9)
         diff = np.abs(out - trg)
         # print(diff)
         diff[diff > thresh] = 1
@@ -55,9 +58,18 @@ def train(options):
     writer = SummaryWriter(exp_name,flush_secs=1)
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    r_filename = 'RAW_Data.pickle'
+    methods = ['average','max','max','max','max','max','max','max','max','max',
+        'max','max','max','max','max','max','max','max','average','average',
+        'average','average','average','average','average','average','average','average']
+        
+    preprocess_instance = preprocess(r_filename, window_size=win_size, methods=methods)
+    preprocess_instance.normalize()
     
-    X = np.load('bined_x.npy')
-    y = np.load('bined_y.npy')
+    preprocess_instance.bin(include_remainder=False)
+    preprocess_instance.transform_target()
+    X = np.load('bined_x_win'+str(win_size)+'.npy')
+    y = np.load('bined_y_win'+str(win_size)+'.npy')
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     if use_pca and 'Raw' in exp_name:
         scaler = PCA(pca_var_hold)
@@ -131,7 +143,7 @@ def train(options):
         
         total_loss = 0
         total = 0
-        accsat =[0.5,0.05,0.005]
+        accsat =[1,0.5,0.05]
         accs = np.zeros(len(accsat))
         # corrs = np.zeros(len(accsat))
         correct_array = np.zeros(len(accsat))
@@ -149,7 +161,7 @@ def train(options):
                 """
                 for i in range(len(accsat)):
 
-                    correct_array[i] += accat(outputs,labels,thresh=accsat[i])
+                    correct_array[i] += accat(outputs,labels,thresh=accsat[i],preprocess_instance=preprocess_instance)
 
                 # total_loss += loss.item()
                 total += labels.size(0)
@@ -177,7 +189,7 @@ def train(options):
                 .format(epoch+1, np.mean(train_losses), np.mean(valid_losses), accs[1]))
 if __name__ == '__main__':
     options ={'exp_name'      : None, #default if dont want to specify 
-              'win_size'      : 5,
+              'win_size'      : 3,
               'batch_size'    : 128,
               'epochs'        : 50,
               'lr'            : 0.0003,
