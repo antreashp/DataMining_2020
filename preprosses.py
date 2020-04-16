@@ -236,9 +236,9 @@ def save_numpy(arr,filename):
 
 if __name__ == '__main__':
     
-    for win_size in range(5,6):
+    for win_size in range(1,6):
         '''change methods here'''
-        methods = ['max','max','max','max','max','max','max','max','max','max',
+        methods = ['average','max','max','max','max','max','max','max','max','max',
         'max','max','max','max','max','max','max','max','average','average',
         'average','average','average','average','average','average','average','average']
         preprocess_instance = preprocess(filename, window_size=win_size, methods=methods)
