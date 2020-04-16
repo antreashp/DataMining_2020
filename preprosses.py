@@ -31,6 +31,7 @@ class preprocess:
         # self.step = step_size if step_size is step_size <= window_size and step_size >= 1 and type(
         #     step_size) is int else 1
         self.processed_data = {}
+        self.encoded = False
         self.indexes = {
             'target': [0, 0],
             'valence': [1, 1],
@@ -61,7 +62,7 @@ class preprocess:
         return [(sum([x[i] for x in record if x[i] is not None]) / len([x for x in record if x[i] is not None])) if
                 methods[i] == 'average' else max([x[i] for x in record if x[i] is not None]) if methods[i] == 'max' else
                 min([x[i] for x in record if x[i] is not None]) for i in range(self.indexes['circumplex'][0],
-                                                                               self.indexes['circumplex'][1])]
+                                                                               self.indexes['circumplex'][1] + 1)]
 
     def average_mood(self, record):
         """
@@ -84,10 +85,10 @@ class preprocess:
         valence = []
         for data_point in record:
             if data_point[self.indexes['arousal'][0]] is not None:
-                arousal.append(data_point[1])
+                arousal.append(data_point[self.indexes['arousal'][0]])
         for data_point in record:
             if data_point[self.indexes['valence'][0]] is not None:
-                valence.append(data_point[2])
+                valence.append(data_point[self.indexes['valence'][0]])
         return 0.5 if not len(arousal) else sum(arousal) / len(arousal) if method == 'average' else max(arousal) if \
             method == 'max' else min(arousal), \
                0.5 if not len(valence) else sum(valence) / len(valence) if method == 'average' else max(valence) if \
@@ -98,7 +99,7 @@ class preprocess:
         :param record: list
         """
         return [sum([x[i] for x in record]) / len(record) for i in range(self.indexes['time'][0], self.indexes['season'][
-            1])]
+            1] + 1)]
 
     def normalize(self):
         for user in self.data.keys():
@@ -108,7 +109,7 @@ class preprocess:
             for date in date_keys:
                 date_data = user_data[date]
                 for record in date_data:
-                    for i in range(self.indexes['time'][0], self.indexes['season'][1]):
+                    for i in range(self.indexes['circumplex'][0], self.indexes['circumplex'][1] + 1):
                         if record[i] is None:
                             record[i] = 0
                         if max_values[i] < record[i]:
@@ -117,7 +118,7 @@ class preprocess:
                 date_data = user_data[date]
                 for i in range(len(date_data)):
                     record = date_data[i]
-                    for j in range(self.indexes['time'][0], self.indexes['season'][1]):
+                    for j in range(self.indexes['circumplex'][0], self.indexes['circumplex'][1] + 1):
                         record[j] = record[j] / max_values[j] if max_values[j] != 0 else 0
                     self.data[user][date][i] = record
 
@@ -161,7 +162,11 @@ class preprocess:
         count_total = 0
         for user_data in self.processed_data.values():
             for day_data in user_data.values():
-                if day_data[0] is not None and day_data[0] <= day_data[-1] * 9 + 0.5 and day_data[0] > day_data[-1] * 9\
+                if self.encoded:
+                    mood = self.decode_target(day_data[0])
+                else:
+                    mood = day_data[0]
+                if mood is not None and day_data[0] <= day_data[-1] * 9 + 0.5 and mood > day_data[-1] * 9\
                         - 0.5:
                     count_accurate += 1
                 count_total += 1
@@ -169,6 +174,7 @@ class preprocess:
         return accuracy
 
     def transform_target(self):
+        self.encoded = True
         counts = [0 for i in range(9)]
         for user, user_data in self.processed_data.items():
             for data_point in user_data.values():
@@ -198,6 +204,8 @@ class preprocess:
             return 9
         if value == 0:
             return 0
+        if value is None:
+            return None
         k = 0
         for offset in self.offsets:
             if value < offset:
@@ -231,7 +239,7 @@ if __name__ == '__main__':
         '''change methods here'''
         methods = ['max','max','max','max','max','max','max','max','max','max',
         'max','max','max','max','max','max','max','max','average','average',
-        'average','average','average','average','average','average','average']
+        'average','average','average','average','average','average','average','average']
         preprocess_instance = preprocess(filename, window_size=win_size, methods=methods)
         preprocess_instance.normalize()
         none_days = 0
