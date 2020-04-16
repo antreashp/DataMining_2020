@@ -6,3 +6,5 @@ bined_y_win2.npy
 bined_y_win3.npy
 bined_y_win4.npy
 
+
+*.pyc
