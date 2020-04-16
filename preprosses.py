@@ -94,6 +94,7 @@ class preprocess:
                0.5 if not len(valence) else sum(valence) / len(valence) if method == 'average' else max(valence) if \
                    method == 'max' else min(valence)
 
+
     def average_time_and_season(self, record):
         """
         :param record: list
@@ -237,7 +238,7 @@ if __name__ == '__main__':
     
     for win_size in range(1,6):
         '''change methods here'''
-        methods = ['max','max','max','max','max','max','max','max','max','max',
+        methods = ['average','max','max','max','max','max','max','max','max','max',
         'max','max','max','max','max','max','max','max','average','average',
         'average','average','average','average','average','average','average','average']
         preprocess_instance = preprocess(filename, window_size=win_size, methods=methods)
@@ -253,8 +254,6 @@ if __name__ == '__main__':
                     
         print(none_days, total_days)
         preprocess_instance.bin(include_remainder=False)
-        preprocess_instance.transform_target()
-        print(preprocess_instance.decode_target(0.56))
         exp_name = 'runs/benchmark_win'+str(win_size)
         if os.path.exists(exp_name):
             shutil.rmtree(exp_name)
@@ -263,8 +262,9 @@ if __name__ == '__main__':
         xaxis = np.ones((50)) *preprocess_instance.bench_mark()
         for i in range(len(xaxis)):
             writer.add_scalar('Acc/benchmarks/'+'win_'+str(win_size), xaxis[i], i)
-
+            
         print('benchmark accuracy: ',preprocess_instance.bench_mark())
+        # print(preprocess_instance.processed_data)
         '''Save preprocess_instance.processed_data:'''
         # print(preprocess_instance.processed_data['AS14.01'][735327])
         # print(len(preprocess_instance.processed_data.keys()))
