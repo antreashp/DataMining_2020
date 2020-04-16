@@ -144,7 +144,7 @@ def train(options):
 
                 """
                 Correct if:
-                preprocess.decode(output) == proprocess.decode(target)
+                preprocess.decode_target(output) == proprocess.decode(target)
                 
                 """
                 for i in range(len(accsat)):
