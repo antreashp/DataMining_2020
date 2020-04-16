@@ -142,7 +142,11 @@ def train(options):
                 outputs = model(images)
                 loss =  loss_fn(outputs, labels)
 
+                """
+                Correct if:
+                preprocess.decode(output) == proprocess.decode(target)
                 
+                """
                 for i in range(len(accsat)):
 
                     correct_array[i] += accat(outputs,labels,thresh=accsat[i])
