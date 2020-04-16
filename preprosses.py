@@ -31,6 +31,25 @@ class preprocess:
         # self.step = step_size if step_size is step_size <= window_size and step_size >= 1 and type(
         #     step_size) is int else 1
         self.processed_data = {}
+        self.indexes = {
+            'target': [0, 0],
+            'valence': [1, 1],
+            'arousal': [2, 2],
+            'circumplex': [3, 18],
+            'time': [9, 22],
+            'season': [23, 27],
+            'mood': [28, 28]
+        }
+
+    def set_index(self, indexes):
+        """
+        Input a dictionary, with variable name as keys, indexes (list of 2)
+
+        :param indexes: dict
+        :return:
+        """
+        for key, value in indexes.items():
+            self.indexes[key] = value
 
     def average(self, record):
         """
@@ -40,7 +59,8 @@ class preprocess:
 
         return [(sum([x[i] for x in record if x[i] is not None]) / len([x for x in record if x[i] is not None])) if
                 methods[i] == 'average' else max([x[i] for x in record if x[i] is not None]) if methods[i] == 'max' else
-                min([x[i] for x in record if x[i] is not None]) for i in range(3, 19)]
+                min([x[i] for x in record if x[i] is not None]) for i in range(self.indexes['circumplex'][0],
+                                                                               self.indexes['circumplex'][1])]
 
     def average_mood(self, record):
         """
@@ -49,8 +69,8 @@ class preprocess:
         method = self.methods[0] is self.methods is not None
         moods = []
         for data_point in record:
-            if data_point[0] is not None:
-                moods.append(data_point[0])
+            if data_point[self.indexes['target'][0]] is not None:
+                moods.append(data_point[self.indexes['target'][0]])
         return -1 if not len(moods) else sum(moods) / len(moods) if method == 'average' else max(moods) if method == \
                                                                                              'max' else min(moods)
 
@@ -62,10 +82,10 @@ class preprocess:
         arousal = []
         valence = []
         for data_point in record:
-            if data_point[1] is not None:
+            if data_point[self.indexes['arousal'][0]] is not None:
                 arousal.append(data_point[1])
         for data_point in record:
-            if data_point[2] is not None:
+            if data_point[self.indexes['valence'][0]] is not None:
                 valence.append(data_point[2])
         return 0.5 if not len(arousal) else sum(arousal) / len(arousal) if method == 'average' else max(arousal) if \
             method == 'max' else min(arousal), \
@@ -76,7 +96,8 @@ class preprocess:
         """
         :param record: list
         """
-        return [sum([x[i] for x in record]) / len(record) for i in range(19, 27)]
+        return [sum([x[i] for x in record]) / len(record) for i in range(self.indexes['time'][0], self.indexes['season'][
+            1])]
 
     def normalize(self):
         for user in self.data.keys():
@@ -86,7 +107,7 @@ class preprocess:
             for date in date_keys:
                 date_data = user_data[date]
                 for record in date_data:
-                    for i in range(3, 19):
+                    for i in range(self.indexes['time'][0], self.indexes['season'][1]):
                         if record[i] is None:
                             record[i] = 0
                         if max_values[i] < record[i]:
@@ -95,9 +116,10 @@ class preprocess:
                 date_data = user_data[date]
                 for i in range(len(date_data)):
                     record = date_data[i]
-                    for j in range(3, 19):
+                    for j in range(self.indexes['time'][0], self.indexes['season'][1]):
                         record[j] = record[j] / max_values[j] if max_values[j] != 0 else 0
                     self.data[user][date][i] = record
+    
     def bin(self, include_remainder=False):
         for user in self.data.keys():
             user_data = self.data[user]
