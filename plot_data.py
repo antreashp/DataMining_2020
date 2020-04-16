@@ -27,14 +27,21 @@ class Plotter():
                 for j,day in enumerate(list(self.data[user].keys())):
                     # my_arr[i].append([])    
                     for k,record in enumerate(list(self.data[user][day])):
-                        my_arr.append([i]+[j]+self.data[user][day][k])
+                        my_arr.append([user]+[j]+self.data[user][day][k])
             numpy_data = np.array(my_arr)
 
             self.df = pd.DataFrame(data=numpy_data, columns=self.var_names)
-            
-            # self.df = self.df.dropna(subset=['mood'])
+            group_by_day = self.df.groupby(by=['day','user'])
+            mood_count = group_by_day.max()
+            # print(mood_count)
+            mood_count = mood_count.dropna(subset=['mood'])
+            print(mood_count)
+            d = mood_count.index
+            print(d)
+            exit()
             print(self.df.head(1))
             # filtered_class = self.df
+            
             sns.pairplot(self.df.loc[:])
             # sns.lmplot('user',"day", data= self.df, hue='mood', fit_reg=False, col="circumplex.arousal", col_wrap=3)
             plt.show()
