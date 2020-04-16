@@ -1,10 +1,5 @@
 runs/*
-bined_y_win5.npy
-
-bined_y_win1.npy
-bined_y_win2.npy
-bined_y_win3.npy
-bined_y_win4.npy
+*.npy
 
 
 *.pyc
