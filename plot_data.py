@@ -27,22 +27,19 @@ class Plotter():
                 for j,day in enumerate(list(self.data[user].keys())):
                     # my_arr[i].append([])    
                     for k,record in enumerate(list(self.data[user][day])):
+                        if self.data[user][day][k][0] is None:
+                            continue
                         my_arr.append([user]+[j]+self.data[user][day][k])
             numpy_data = np.array(my_arr)
 
             self.df = pd.DataFrame(data=numpy_data, columns=self.var_names)
-            group_by_day = self.df.groupby(by=['day','user'])
-            mood_count = group_by_day.max()
-            # print(mood_count)
-            mood_count = mood_count.dropna(subset=['mood'])
-            print(mood_count)
-            d = mood_count.index
-            print(d)
-            exit()
-            print(self.df.head(1))
-            # filtered_class = self.df
-            
-            sns.pairplot(self.df.loc[:])
+
+            # group_by_day = self.df.groupby(by=['day','user'])
+            # self.df = group_by_day.mean()         # filtered_class = self.df
+            corr = self.df
+            print(corr)
+            sns.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, cmap=sns.diverging_palette(220, 10, as_cmap=True))
+            # sns.pairplot(self.df.head(30).loc[:])
             # sns.lmplot('user',"day", data= self.df, hue='mood', fit_reg=False, col="circumplex.arousal", col_wrap=3)
             plt.show()
     def scatter_variable_for_user(self,var=None,show=True,save=False):
