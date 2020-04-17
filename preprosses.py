@@ -17,7 +17,7 @@ var_ids = ['mood', 'circumplex.arousal', 'circumplex.valence', 'activity', 'scre
            'morning', 'noon', 'afternoon', 'night', 'winter', 'spring', 'spring2', 'spring3','summer','mood']
 
 class preprocess:
-    def __init__(self, filename, window_size=1, methods=None):
+    def __init__(self, filename, window_size=1, methods=None,writer = None):
         """
         :param filename: str
         :param window_size: int
@@ -30,7 +30,7 @@ class preprocess:
             self.data = pickle.load(f)
         self.window = window_size if window_size >= 1 and type(window_size) is int else 1
                 
-        self.writer = SummaryWriter('runs/benchmark_win'+str(self.window),flush_secs=1)
+        self.writer = writer
 
         # self.step = step_size if step_size is step_size <= window_size and step_size >= 1 and type(
         #     step_size) is int else 1
@@ -190,6 +190,29 @@ class preprocess:
         dataframe = pd.DataFrame(data_matrix_clear, columns=['user_id', 'date'] + self.variable_names[:-1])
         return dataframe
 
+    def create_dataframe_pros(self):
+        data_matrix = []
+        days_without_mood = set()
+        for user, user_data in self.processed_data.items():
+            for day, record in user_data.items():
+                has_mood = False
+                if record[self.indexes['target'][0]] is not None:
+                    has_mood = True
+                row = [user, day]
+                for i, value in enumerate(record):
+                    if i >= self.indexes['appcat'][0] and i < self.indexes['appcat'][1]:
+                        row.append(0 if value is None else value)
+                    else:
+                        row.append(value)
+                data_matrix.append(row)
+                if not has_mood:
+                    days_without_mood.add(day)
+        data_matrix_clear = []
+        for row in data_matrix:
+            if row[1] not in days_without_mood:
+                data_matrix_clear.append(row)
+        dataframe = pd.DataFrame(data_matrix_clear, columns=['user_id', 'date'] + self.variable_names)
+        return dataframe
     def bin_nonorm(self, include_remainder=False):
         for user in self.data.keys():
             user_data = self.data[user]
@@ -329,12 +352,13 @@ def save_numpy(arr,filename):
 
 if __name__ == '__main__':
     
-    for win_size in range(1,6):
+    for win_size in range(1,2):
         '''change methods here'''
         methods = ['average','max','max','max','max','max','max','max','max','max',
         'max','max','max','max','max','max','max','max','average','average',
         'average','average','average','average','average','average','average','average']
-        preprocess_instance = preprocess(filename, window_size=win_size, methods=methods)
+        writer = SummaryWriter(os.path.join('runs','benchmark_win'+str(win_size)),flush_secs=1)
+        preprocess_instance = preprocess(filename, window_size=win_size, methods=methods,writer=writer)
         preprocess_instance.normalize()
         none_days = 0
         total_days = 0
