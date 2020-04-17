@@ -1,6 +1,7 @@
 runs/*
 *.npy
-
-
+plots/*
+hilbert_data/*
+models/*
 *.pyc
 *.npy
