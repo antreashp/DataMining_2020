@@ -27,18 +27,29 @@ class Plotter():
                 for j,day in enumerate(list(self.data[user].keys())):
                     # my_arr[i].append([])    
                     for k,record in enumerate(list(self.data[user][day])):
-                        if self.data[user][day][k][0] is None:
-                            continue
-                        my_arr.append([user]+[j]+self.data[user][day][k])
+                        # if self.data[user][day][k][0] is None:
+                        #     continue
+                        my_arr.append([i]+[j]+self.data[user][day][k])
             numpy_data = np.array(my_arr)
 
             self.df = pd.DataFrame(data=numpy_data, columns=self.var_names)
+            
+            print(self.df)
+            exit()
+            # print(self.df['screen'].max())
+            self.df = self.df.groupby(['day','user'])
+            for j in self.df['mood' ].max():
 
+                print(j)
+            exit()
+            self.df.fillna(value=np.nan, inplace=True)
+            self.df = self.df.fillna(0)
+            print(self.df.head(10))
             # group_by_day = self.df.groupby(by=['day','user'])
             # self.df = group_by_day.mean()         # filtered_class = self.df
-            corr = self.df
-            print(corr)
-            sns.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, cmap=sns.diverging_palette(220, 10, as_cmap=True))
+            # corr = self.df
+            # print(corr)
+            # sns.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, cmap=sns.diverging_palette(220, 10, as_cmap=True))
             # sns.pairplot(self.df.head(30).loc[:])
             # sns.lmplot('user',"day", data= self.df, hue='mood', fit_reg=False, col="circumplex.arousal", col_wrap=3)
             plt.show()
@@ -47,12 +58,26 @@ class Plotter():
             print('you have to select a variable to plot...')
             return None
         
-        
+    def histogram_ofvar(self,var=None,show=True,save=False):
+        if var is None:
+            print('you have to select a variable to plot...')
+            return None
+        sns.set(style='whitegrid', palette="deep", font_scale=1.1, rc={"figure.figsize": [8, 5]})
+      
+        temp_plot = sns.distplot(self.df[var], norm_hist=False, kde=False,
+             bins=20, hist_kws={"alpha": 1}).set(xlabel=var, ylabel='Count',title=var+' Histogram')
+        if save:
+            plt.savefig('plots/'+var+"_histogram.png")
+        if show:
+            plt.show()
+        return   temp_plot  
 
 
 if __name__ == "__main__":
+      
     plotter = Plotter()
-
+    for var in plotter.var_names:
+        ans = plotter.histogram_ofvar(var=var,show=True,save=True)
 
 # meh = Counter(y[:]) 
 # for i,val in meh.items():
