@@ -48,7 +48,7 @@ class Plotter():
         corr = meh.corr(method ='spearman') 
 
         # print(corr)
-        mask = np.triu(np.ones_like(corr, dtype=np.bool))
+        # mask = np.triu(np.ones_like(corr, dtype=np.bool))
         # print(mask)
         # Set up the matplotlib figure
         f, ax = plt.subplots(figsize=(11, 9))
@@ -57,7 +57,7 @@ class Plotter():
         # cmap = sns.diverging_palette(1, 0, as_cmap=True)
 
         # Draw the heatmap with the mask and correct aspect ratio
-        sns.heatmap(corr,mask=mask, vmax=1,
+        sns.heatmap(corr, vmax=1,
                     square=True, linewidths=.5)
         # sns.pairplot()
         if save:
