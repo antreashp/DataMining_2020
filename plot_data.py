@@ -77,7 +77,7 @@ class Plotter():
             df[cols].hist(bins=self.bins[var], figsize=(20, 9), layout=(5, 4))
             if save:
                 
-                name ='plots/'+var+"_histogram.png" if pros else 'plots/'+var+"_pros_histogram.png"
+                name ='plots/'+var+"_histogram.png" if not pros else 'plots/'+var+"_pros_histogram.png"
                 plt.savefig(name)
             if show:
                 plt.show()
@@ -85,7 +85,7 @@ class Plotter():
             for i in cols:
                 sns.countplot(df[i])
                 if save:
-                    name ='plots/'+var+"_histogram.png" if pros else 'plots/'+var+"_pros_histogram.png"
+                    name ='plots/'+var+"_histogram.png" if not pros else 'plots/'+var+"_pros_histogram.png"
                     plt.savefig(name)
                 if show:
                     plt.show()
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     plotter = Plotter()
     
     for var in ['cat','num','times','months']:
-        ans = plotter.histogram_ofvars(var=var,show=True,save=True,pros=True)
-        ans = plotter.histogram_ofvars(var=var,show=True,save=True,pros=False)
+        ans = plotter.histogram_ofvars(var=var,show=False,save=True,pros=True)
+        ans = plotter.histogram_ofvars(var=var,show=False,save=True,pros=False)
     
     plotter.correlation_matrix(show=True,save=True)
