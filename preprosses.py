@@ -39,7 +39,7 @@ class preprocess:
             'target': [0, 0],
             'valence': [1, 1],
             'arousal': [2, 2],
-            'circumplex': [3, 18],
+            'appcat': [3, 18],
             'time': [19, 22],
             'season': [23, 27],
             'mood': [28, 28]
@@ -64,8 +64,8 @@ class preprocess:
 
         return [(sum([x[i] for x in record if x[i] is not None]) / len([x for x in record if x[i] is not None])) if
                 methods[i] == 'average' else max([x[i] for x in record if x[i] is not None]) if methods[i] == 'max' else
-                min([x[i] for x in record if x[i] is not None]) for i in range(self.indexes['circumplex'][0],
-                                                                               self.indexes['circumplex'][1] + 1)]
+                min([x[i] for x in record if x[i] is not None]) for i in range(self.indexes['appcat'][0],
+                                                                               self.indexes['appcat'][1] + 1)]
 
     def average_mood(self, record):
         """
@@ -112,7 +112,7 @@ class preprocess:
             for date in date_keys:
                 date_data = user_data[date]
                 for record in date_data:
-                    for i in range(self.indexes['circumplex'][0], self.indexes['circumplex'][1] + 1):
+                    for i in range(self.indexes['appcat'][0], self.indexes['appcat'][1] + 1):
                         if record[i] is None:
                             record[i] = 0
                         if max_values[i] < record[i]:
@@ -121,7 +121,7 @@ class preprocess:
                 date_data = user_data[date]
                 for i in range(len(date_data)):
                     record = date_data[i]
-                    for j in range(self.indexes['circumplex'][0], self.indexes['circumplex'][1] + 1):
+                    for j in range(self.indexes['appcat'][0], self.indexes['appcat'][1] + 1):
                         record[j] = record[j] / max_values[j] if max_values[j] != 0 else 0
                     self.data[user][date][i] = record
 
