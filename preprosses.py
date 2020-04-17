@@ -159,6 +159,39 @@ class preprocess:
                 # print(target_mood)
                 current_index += self.step
             self.processed_data[user] = processed_user_data
+    def bin_nonorm(self, include_remainder=False):
+        for user in self.data.keys():
+            user_data = self.data[user]
+            current_index = 0
+            processed_user_data = {}
+            date_keys = [x for x in user_data.keys()]
+            while (current_index + self.window < len(user_data.items()) and not include_remainder) \
+                    or (current_index + self.step < len(user_data) and include_remainder):
+                record = []
+                if current_index + self.window >= len(user_data) and include_remainder:
+                    for i in range(len(user_data) - current_index):
+                        for j in range(len(user_data[date_keys[current_index + i]])):
+                            record.append(user_data[date_keys[current_index + i]][j])
+                else:
+                    for i in range(self.window):
+                        for j in range(len(user_data[date_keys[current_index + i]])):
+                            record.append(user_data[date_keys[current_index + i]][j])
+                target_mood = self.average_mood(record)
+                previous_mood = self.average_mood([record[0]])
+                data_point = [None] + list(record) + record + record + [target_mood / 9]
+                if target_mood == -1 or previous_mood == -1:
+                    # print(user, date_keys[current_index], 'removed')
+                    current_index += self.step
+                    del user_data[date_keys[current_index]]
+                    date_keys.pop(current_index)
+                    continue
+                processed_user_data[date_keys[current_index]] = data_point
+                if current_index > 0:
+                    processed_user_data[date_keys[current_index - 1]][0] = previous_mood
+                    # print(processed_user_data[date_keys[current_index - 1]])
+                # print(target_mood)
+                current_index += self.step
+            self.processed_data[user] = processed_user_data
 
     def bench_mark(self):
         count_accurate = 0
