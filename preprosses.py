@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import os, sys
 from collections import defaultdict
 from tqdm import tqdm
@@ -39,11 +40,15 @@ class preprocess:
             'target': [0, 0],
             'valence': [1, 1],
             'arousal': [2, 2],
-            'circumplex': [3, 18],
+            'appcat': [3, 18],
             'time': [19, 22],
             'season': [23, 27],
             'mood': [28, 28]
         }
+        self.variable_names = ['mood', 'circumplex.arousal', 'circumplex.valence', 'activity', 'screen', 'call', 'sms', 'appCat.builtin',
+           'appCat.communication', 'appCat.entertainment', 'appCat.finance', 'appCat.game', 'appCat.office',
+           'appCat.other', 'appCat.social', 'appCat.travel', 'appCat.unknown', 'appCat.utilities', 'appCat.weather',
+           'morning', 'noon', 'afternoon', 'night', 'winter', 'spring', 'spring2', 'spring3','summer','mood']
         # inclusive
         
     def set_index(self, indexes):
@@ -64,8 +69,8 @@ class preprocess:
 
         return [(sum([x[i] for x in record if x[i] is not None]) / len([x for x in record if x[i] is not None])) if
                 methods[i] == 'average' else max([x[i] for x in record if x[i] is not None]) if methods[i] == 'max' else
-                min([x[i] for x in record if x[i] is not None]) for i in range(self.indexes['circumplex'][0],
-                                                                               self.indexes['circumplex'][1] + 1)]
+                min([x[i] for x in record if x[i] is not None]) for i in range(self.indexes['appcat'][0],
+                                                                               self.indexes['appcat'][1] + 1)]
 
     def average_mood(self, record):
         """
@@ -112,7 +117,7 @@ class preprocess:
             for date in date_keys:
                 date_data = user_data[date]
                 for record in date_data:
-                    for i in range(self.indexes['circumplex'][0], self.indexes['circumplex'][1] + 1):
+                    for i in range(self.indexes['appcat'][0], self.indexes['appcat'][1] + 1):
                         if record[i] is None:
                             record[i] = 0
                         if max_values[i] < record[i]:
@@ -121,7 +126,7 @@ class preprocess:
                 date_data = user_data[date]
                 for i in range(len(date_data)):
                     record = date_data[i]
-                    for j in range(self.indexes['circumplex'][0], self.indexes['circumplex'][1] + 1):
+                    for j in range(self.indexes['appcat'][0], self.indexes['appcat'][1] + 1):
                         record[j] = record[j] / max_values[j] if max_values[j] != 0 else 0
                     self.data[user][date][i] = record
 
@@ -159,6 +164,32 @@ class preprocess:
                 # print(target_mood)
                 current_index += self.step
             self.processed_data[user] = processed_user_data
+
+    def create_dataframe(self):
+        data_matrix = []
+        days_without_mood = set()
+        for user, user_data in self.data.items():
+            for day, day_data in user_data.items():
+                has_mood = False
+                for record in day_data:
+                    if record[self.indexes['target'][0]] is not None:
+                        has_mood = True
+                    row = [user, day]
+                    for i, value in enumerate(record):
+                        if i >= self.indexes['appcat'][0] and i < self.indexes['appcat'][1]:
+                            row.append(0 if value is None else value)
+                        else:
+                            row.append(value)
+                    data_matrix.append(row)
+                if not has_mood:
+                    days_without_mood.add(day)
+        data_matrix_clear = []
+        for row in data_matrix:
+            if row[1] not in days_without_mood:
+                data_matrix_clear.append(row)
+        dataframe = pd.DataFrame(data_matrix_clear, columns=['user_id', 'date'] + self.variable_names[:-1])
+        return dataframe
+
     def bin_nonorm(self, include_remainder=False):
         for user in self.data.keys():
             user_data = self.data[user]
@@ -317,12 +348,11 @@ if __name__ == '__main__':
         print(none_days, total_days)
         preprocess_instance.bin(include_remainder=False)
         preprocess_instance.transform_target()
-        print(preprocess_instance.decode_target(0.56))
         exp_name = 'runs/benchmark_win'+str(win_size)
-        # if os.path.exists(exp_name):
-        #     shutil.rmtree(exp_name)
+        if os.path.exists(exp_name):
+            shutil.rmtree(exp_name)
 
-        # xaxis = np.ones((50)) *preprocess_instance.bench_mark()
+        xaxis = np.ones((50)) *preprocess_instance.bench_mark()
 
         print('benchmark accuracy: ',preprocess_instance.bench_mark())
         '''Save preprocess_instance.processed_data:'''
@@ -336,7 +366,7 @@ if __name__ == '__main__':
             for day, day_data in preprocess_instance.processed_data[user].items():
                 # total_days += 1
                 # print(preprocess_instance.processed_data [user][day])
-                    
+
                 if  day_data[0] is None :
                     pass
                 else:
