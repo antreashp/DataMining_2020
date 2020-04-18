@@ -20,3 +20,7 @@ plots
 skynet
 
 
+results: 
+
+5 windows x 3 models * 4 (median, max min ,mean)
+

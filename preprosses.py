@@ -30,7 +30,7 @@ class preprocess:
             self.data = pickle.load(f)
         self.window = window_size if window_size >= 1 and type(window_size) is int else 1
                 
-        self.writer = writer
+        # self.writer = writer
 
         # self.step = step_size if step_size is step_size <= window_size and step_size >= 1 and type(
         #     step_size) is int else 1
@@ -48,7 +48,7 @@ class preprocess:
         self.variable_names = ['mood', 'circumplex.arousal', 'circumplex.valence', 'activity', 'screen', 'call', 'sms', 'appCat.builtin',
            'appCat.communication', 'appCat.entertainment', 'appCat.finance', 'appCat.game', 'appCat.office',
            'appCat.other', 'appCat.social', 'appCat.travel', 'appCat.unknown', 'appCat.utilities', 'appCat.weather',
-           'morning', 'noon', 'afternoon', 'night', 'winter', 'spring', 'spring2', 'spring3','summer','mood']
+           'morning', 'noon', 'afternoon', 'night', 'winter', 'spring', 'spring2', 'spring3','summer','average_mood']
         # inclusive
         
     def set_index(self, indexes):
@@ -267,7 +267,7 @@ class preprocess:
                 count_total += 1
             temp_acc = count_accurate / count_total
 
-            self.writer.add_scalar('Acc/val_@'+str(0.05),float(temp_acc*100), i)
+            # self.writer.add_scalar('Acc/val_@'+str(0.05),float(temp_acc*100), i)
 
         accuracy = count_accurate / count_total
         return accuracy
@@ -319,9 +319,9 @@ class preprocess:
         for i,value in enumerate(arr):
 
             if value == 9:
-                return 9
+                d_arr[i] = 9
             if value == 0:
-                return 0
+                d_arr[i] = 0
             if value is None:
                 return None
             k = 0
@@ -349,7 +349,8 @@ def dict_to_numpy(my_dict):
 def save_numpy(arr,filename):
     np.save(filename, arr)
 
-
+# writer = SummaryWriter(os.path.join('runs','benchmark_win'+str(win_size)),flush_secs=1)
+        
 if __name__ == '__main__':
     
     for win_size in range(1,2):
@@ -357,8 +358,7 @@ if __name__ == '__main__':
         methods = ['average','max','max','max','max','max','max','max','max','max',
         'max','max','max','max','max','max','max','max','average','average',
         'average','average','average','average','average','average','average','average']
-        writer = SummaryWriter(os.path.join('runs','benchmark_win'+str(win_size)),flush_secs=1)
-        preprocess_instance = preprocess(filename, window_size=win_size, methods=methods,writer=writer)
+        preprocess_instance = preprocess(filename, window_size=win_size, methods=methods)
         preprocess_instance.normalize()
         none_days = 0
         total_days = 0

@@ -44,7 +44,7 @@ class Plotter():
     def correlation_matrix(self,show=True,save=False):
         
         # sns.set(style='whitegrid', palette="deep", font_scale=1.1, rc={"figure.figsize": [8, 5]})
-        meh  = self.df_pros[self.numerical ][(self.df_pros[self.numerical ].T != 0).any()]
+        meh  = self.df_pros[self.numerical +['average_mood']][(self.df_pros[self.numerical +['average_mood']].T != 0).any()]
         corr = meh.corr(method ='spearman') 
 
         # print(corr)
@@ -72,6 +72,9 @@ class Plotter():
         sns.set(style='whitegrid', palette="deep", font_scale=1.1, rc={"figure.figsize": [8, 5]})
         # meh = self.df.dropna(subset=[var])
         cols = self.numerical if var == 'num' else self.categorical if var == 'cat' else self.times if var == 'times' else self.months
+        if pros and var=='num':
+            cols+=['average_mood']
+            # print(df.head(1))
         if var != 'cat':
 
             df[cols].hist(bins=self.bins[var], figsize=(20, 9), layout=(5, 4))
@@ -82,10 +85,11 @@ class Plotter():
             if show:
                 plt.show()
         else:
-            for i in cols:
-                sns.countplot(df[i])
+            for i,col in enumerate(cols):
+                plt.figure(i)
+                sns.countplot(df[col])
                 if save:
-                    name ='plots/'+var+"_histogram.png" if not pros else 'plots/'+var+"_pros_histogram.png"
+                    name ='plots/'+var+str(i)+"_histogram.png" if not pros else 'plots/'+var+str(i)+"_pros_histogram.png"
                     plt.savefig(name)
                 if show:
                     plt.show()
@@ -96,6 +100,10 @@ if __name__ == "__main__":
     
     for var in ['cat','num','times','months']:
         ans = plotter.histogram_ofvars(var=var,show=False,save=True,pros=True)
-        ans = plotter.histogram_ofvars(var=var,show=False,save=True,pros=False)
+        # ans = plotter.histogram_ofvars(var=var,show=False,save=True,pros=False)
+    # print(plotter.df_pros.head(2))
     
-    plotter.correlation_matrix(show=True,save=True)
+    # print(plotter.df.head(2))
+    plotter.correlation_matrix(show=False,save=True)
+    # g = sns.pairplot(plotter.df_pros,vars=['mood','average_mood'])
+    # plt.show()
