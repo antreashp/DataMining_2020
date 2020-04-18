@@ -5,3 +5,4 @@ hilbert_data/*
 models/*
 *.pyc
 *.npy
+*.pyc
