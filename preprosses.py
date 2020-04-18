@@ -372,9 +372,9 @@ if __name__ == '__main__':
         print(none_days, total_days)
         preprocess_instance.bin(include_remainder=False)
         preprocess_instance.transform_target()
-        exp_name = 'runs/benchmark_win'+str(win_size)
-        if os.path.exists(exp_name):
-            shutil.rmtree(exp_name)
+        # exp_name = 'runs/benchmark_win'+str(win_size)
+        # if os.path.exists(exp_name):
+        #     shutil.rmtree(exp_name)
 
         xaxis = np.ones((50)) *preprocess_instance.bench_mark()
 
