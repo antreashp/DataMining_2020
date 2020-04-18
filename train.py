@@ -71,6 +71,7 @@ def train(options):
     X = np.load('bined_x_win'+str(win_size)+'.npy')
     y = np.load('bined_y_win'+str(win_size)+'.npy')
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
     if use_pca and 'Raw' in exp_name:
         scaler = PCA(pca_var_hold)
         scaler.fit(X_train)
